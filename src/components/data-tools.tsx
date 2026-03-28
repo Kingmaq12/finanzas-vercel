@@ -15,7 +15,6 @@ export function DataTools() {
     authEnabled: boolean;
     authenticated: boolean;
   } | null>(null);
-  const [testEmail, setTestEmail] = useState("");
   const [testLoading, setTestLoading] = useState(false);
   const [testMsg, setTestMsg] = useState<string | null>(null);
 
@@ -64,24 +63,20 @@ export function DataTools() {
     router.refresh();
   }
 
-  async function sendTestResend() {
+  async function sendTestTelegram() {
     setTestMsg(null);
     setTestLoading(true);
     try {
-      const res = await fetch("/api/email/test", {
+      const res = await fetch("/api/telegram/test", {
         method: "POST",
         credentials: "include",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(
-          testEmail.trim() ? { to: testEmail.trim() } : {},
-        ),
       });
-      const j = (await res.json().catch(() => ({}))) as { ok?: boolean; error?: string; to?: string };
+      const j = (await res.json().catch(() => ({}))) as { ok?: boolean; error?: string };
       if (!res.ok) {
         setTestMsg(j.error ?? "Error al enviar");
         return;
       }
-      setTestMsg(`Enviado de prueba a ${j.to ?? "destino"}. Revisa spam.`);
+      setTestMsg("Mensaje de prueba enviado al chat de Telegram configurado en el servidor.");
     } catch {
       setTestMsg("Error de red.");
     } finally {
@@ -189,20 +184,13 @@ export function DataTools() {
       {session?.authEnabled && session.authenticated && (
         <div className="space-y-4 rounded-2xl border border-[var(--app-border)] bg-[var(--app-card)] p-6">
           <h2 className="text-sm font-semibold uppercase tracking-wide text-[var(--app-muted)]">
-            Correo (Resend)
+            Telegram (recordatorios)
           </h2>
           <p className="text-sm text-[var(--app-muted)]">
-            La clave va en el servidor como <code className="text-xs">RESEND_API_KEY</code> (no en el
-            código). También necesitas <code className="text-xs">RESEND_FROM_EMAIL</code> (p. ej.{" "}
-            <code className="text-xs">onboarding@resend.dev</code>).
+            Configura en Vercel <code className="text-xs">TELEGRAM_BOT_TOKEN</code> y{" "}
+            <code className="text-xs">TELEGRAM_CHAT_ID</code> (no en el código). Los avisos del
+            calendario compartido usan el mismo bot.
           </p>
-          <input
-            type="email"
-            className="w-full rounded-lg border border-[var(--app-border)] bg-[var(--app-input-bg)] px-3 py-2 text-sm"
-            placeholder="Destino (opcional si defines RESEND_TEST_TO en Vercel)"
-            value={testEmail}
-            onChange={(e) => setTestEmail(e.target.value)}
-          />
           {testMsg && (
             <p className="text-sm text-[var(--app-muted)]" role="status">
               {testMsg}
@@ -212,9 +200,9 @@ export function DataTools() {
             type="button"
             disabled={testLoading}
             className="tap-target rounded-lg border border-[var(--app-border)] bg-[var(--app-input-bg)] px-4 py-3 text-sm font-medium disabled:opacity-60"
-            onClick={() => void sendTestResend()}
+            onClick={() => void sendTestTelegram()}
           >
-            {testLoading ? "Enviando…" : "Enviar correo de prueba"}
+            {testLoading ? "Enviando…" : "Enviar mensaje de prueba"}
           </button>
         </div>
       )}

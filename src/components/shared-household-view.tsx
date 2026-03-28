@@ -97,16 +97,11 @@ export function SharedHouseholdView() {
   const [evStart, setEvStart] = useState("");
   const [evNotes, setEvNotes] = useState("");
   const [evNotify, setEvNotify] = useState(false);
-  const [evEmails, setEvEmails] = useState("");
   const [evMinutes, setEvMinutes] = useState("1440");
 
   async function addEvent(e: React.FormEvent) {
     e.preventDefault();
     if (!evTitle.trim() || !evStart) return;
-    const emails = evEmails
-      .split(/[,;]/)
-      .map((s) => s.trim())
-      .filter(Boolean);
     const res = await fetch("/api/household/events", {
       method: "POST",
       credentials: "include",
@@ -116,7 +111,7 @@ export function SharedHouseholdView() {
         startsAt: new Date(evStart).toISOString(),
         notes: evNotes.trim() || undefined,
         notifyEnabled: evNotify,
-        notifyEmails: emails.length ? emails : payload?.defaultNotifyEmails ?? [],
+        notifyEmails: [],
         notifyMinutesBefore: Number(evMinutes) || 1440,
       }),
     });
@@ -208,24 +203,13 @@ export function SharedHouseholdView() {
       {tab === "calendario" && (
         <div className="space-y-8">
           <section className="rounded-2xl border border-[var(--app-border)] bg-[var(--app-card)] p-6 shadow-sm">
-            <h2 className="text-sm font-semibold">Correos por defecto (recordatorios)</h2>
+            <h2 className="text-sm font-semibold">Recordatorios (Telegram)</h2>
             <p className="mt-1 text-xs text-[var(--app-muted)]">
-              Se sugieren al crear eventos. Puedes cambiarlos por evento. El envío requiere{" "}
-              <strong>Resend</strong> en Vercel (<code className="text-[10px]">RESEND_API_KEY</code>,{" "}
-              <code className="text-[10px]">RESEND_FROM_EMAIL</code>) y cron horario.
+              El cron (cada hora) envía un mensaje al chat configurado en el servidor con{" "}
+              <code className="text-[10px]">TELEGRAM_BOT_TOKEN</code> y{" "}
+              <code className="text-[10px]">TELEGRAM_CHAT_ID</code>. Puedes probar el envío desde{" "}
+              <strong>Datos</strong>.
             </p>
-            <input
-              className="mt-3 w-full max-w-lg rounded-lg border border-[var(--app-border)] bg-[var(--app-input-bg)] px-3 py-2 text-sm"
-              placeholder="correo1@ejemplo.com, correo2@ejemplo.com"
-              value={(payload.defaultNotifyEmails ?? []).join(", ")}
-              onChange={(e) => {
-                const list = e.target.value
-                  .split(/[,;]/)
-                  .map((s) => s.trim())
-                  .filter(Boolean);
-                updatePayload((p) => ({ ...p, defaultNotifyEmails: list }));
-              }}
-            />
           </section>
 
           <section className="rounded-2xl border border-[var(--app-border)] bg-[var(--app-card)] p-6 shadow-sm">
@@ -257,14 +241,8 @@ export function SharedHouseholdView() {
                   checked={evNotify}
                   onChange={(e) => setEvNotify(e.target.checked)}
                 />
-                Notificar por correo
+                Notificar por Telegram
               </label>
-              <input
-                className="rounded-lg border border-[var(--app-border)] bg-[var(--app-input-bg)] px-3 py-2 text-sm"
-                placeholder="Correos (coma)"
-                value={evEmails}
-                onChange={(e) => setEvEmails(e.target.value)}
-              />
               <input
                 className="rounded-lg border border-[var(--app-border)] bg-[var(--app-input-bg)] px-3 py-2 text-sm"
                 placeholder="Minutos antes (ej. 1440 = 24h)"
@@ -298,7 +276,7 @@ export function SharedHouseholdView() {
                     </p>
                     {ev.notifyEnabled && (
                       <p className="mt-1 text-[10px] text-emerald-600 dark:text-emerald-400">
-                        ✉ {ev.notifyEmails.join(", ") || "sin correos"} · {ev.notifyMinutesBefore} min antes
+                        Telegram · {ev.notifyMinutesBefore} min antes
                         {ev.lastNotifiedAt ? " · aviso enviado" : ""}
                       </p>
                     )}

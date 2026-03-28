@@ -1,10 +1,10 @@
 import { listEventsPendingNotification, markEventNotified } from "@/lib/household-server";
-import { getResendFromEmail, sendResendEmail } from "@/lib/resend-client";
+import { isTelegramConfigured, sendTelegramMessage } from "@/lib/telegram-client";
 import { NextResponse } from "next/server";
 
 /**
- * Vercel Cron: define CRON_SECRET y (opcional) RESEND_API_KEY + RESEND_FROM_EMAIL.
- * Comprueba eventos futuros y envía correo cuando se cumple la ventana (minutos antes).
+ * Vercel Cron: define CRON_SECRET y (opcional) TELEGRAM_BOT_TOKEN + TELEGRAM_CHAT_ID.
+ * Comprueba eventos futuros y envía un mensaje cuando se cumple la ventana (minutos antes).
  */
 export async function GET(req: Request) {
   const secret = process.env.CRON_SECRET;
@@ -16,11 +16,11 @@ export async function GET(req: Request) {
     return NextResponse.json({ error: "No autorizado" }, { status: 401 });
   }
 
-  if (!process.env.RESEND_API_KEY?.trim() || !getResendFromEmail()) {
+  if (!isTelegramConfigured()) {
     return NextResponse.json({
       ok: true,
       skipped: true,
-      reason: "Configura RESEND_API_KEY y RESEND_FROM_EMAIL para enviar correos.",
+      reason: "Configura TELEGRAM_BOT_TOKEN y TELEGRAM_CHAT_ID para enviar avisos.",
     });
   }
 
@@ -30,15 +30,13 @@ export async function GET(req: Request) {
   const errors: string[] = [];
 
   for (const ev of events) {
-    const emails = (Array.isArray(ev.notifyEmails) ? ev.notifyEmails : []).filter(Boolean);
-    if (emails.length === 0) continue;
     const msBefore = (ev.notifyMinutesBefore ?? 1440) * 60_000;
     const notifyAt = ev.startsAt.getTime() - msBefore;
     if (now < notifyAt) continue;
 
     try {
       const textBody = [
-        `Evento: ${ev.title}`,
+        `📅 ${ev.title}`,
         `Cuándo: ${ev.startsAt.toLocaleString("es-CO", { dateStyle: "full", timeStyle: "short" })}`,
         ev.notes ? `Notas: ${ev.notes}` : "",
         "",
@@ -46,11 +44,7 @@ export async function GET(req: Request) {
       ]
         .filter(Boolean)
         .join("\n");
-      const result = await sendResendEmail({
-        to: emails,
-        subject: `Recordatorio: ${ev.title}`,
-        text: textBody,
-      });
+      const result = await sendTelegramMessage(textBody);
       if (!result.ok) {
         errors.push(`${ev.id}: ${result.error}`);
         continue;
