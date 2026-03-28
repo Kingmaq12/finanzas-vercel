@@ -72,6 +72,13 @@ export default function LoginPage() {
           Cada usuario tiene sus datos en la base de datos. Usuario y contraseña
           los define quien administra el proyecto (scripts o panel SQL).
         </p>
+        <p className="mt-3 rounded-lg bg-[var(--app-accent-soft)]/40 px-3 py-2 text-center text-xs text-[var(--app-muted)]">
+          Tras entrar verás el menú completo: <strong className="text-[var(--app-fg)]">Categorías</strong>{" "}
+          (✓ en egresos recurrentes), <strong className="text-[var(--app-fg)]">Compartido</strong> (hogar y
+          calendario), <strong className="text-[var(--app-fg)]">Datos</strong> (Telegram, Excel) y el resto.
+          En móvil la barra inferior tiene <strong className="text-[var(--app-fg)]">dos filas</strong> de
+          accesos.
+        </p>
         <form className="mt-8 space-y-4" onSubmit={onSubmit}>
           <input
             type="text"
