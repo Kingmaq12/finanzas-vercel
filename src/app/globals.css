@@ -11,7 +11,25 @@
   --app-sidebar: #f8fafc;
   --app-header: rgba(248, 250, 252, 0.92);
   --app-accent: #059669;
-  --app-accent-soft: rgba(5, 150, 105, 0.1);
+  --app-accent-soft: rgba(5, 150, 105, 0.12);
+  --app-input-bg: #ffffff;
+  --app-chart-grid: #e2e8f0;
+}
+
+.dark {
+  --background: #0c1014;
+  --foreground: #e2e8f0;
+  --app-bg: #0f1419;
+  --app-fg: #e2e8f0;
+  --app-muted: #94a3b8;
+  --app-border: #273549;
+  --app-card: #151c24;
+  --app-sidebar: #111820;
+  --app-header: rgba(17, 24, 32, 0.92);
+  --app-accent: #34d399;
+  --app-accent-soft: rgba(52, 211, 153, 0.14);
+  --app-input-bg: #1e293b;
+  --app-chart-grid: #334155;
 }
 
 @theme inline {
@@ -27,7 +45,6 @@ body {
   font-family: var(--font-geist-sans), system-ui, sans-serif;
 }
 
-/* Área segura en iPhone y objetivos táctiles mínimos */
 .tap-target {
   touch-action: manipulation;
   min-height: 44px;

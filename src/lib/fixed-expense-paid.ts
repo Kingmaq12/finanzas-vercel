@@ -1,10 +1,9 @@
 import type { FinanceData, MonthIndex } from "./types";
 
-/** Egresos y deudas con monto &gt; 0 en el mes (donde aplica el ✓ “pagado”). */
+/** Solo egresos recurrentes con monto &gt; 0 (donde aplica el ✓ “pagado”). */
 export function fixedOutflowSlots(data: FinanceData, month: MonthIndex) {
   return data.categories.filter(
-    (c) =>
-      (c.kind === "expense" || c.kind === "debt") && (c.byMonth[month] ?? 0) > 0,
+    (c) => c.kind === "expense" && (c.byMonth[month] ?? 0) > 0,
   );
 }
 

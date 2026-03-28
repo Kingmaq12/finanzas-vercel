@@ -69,7 +69,7 @@ export function MonthReminderBanner() {
           </p>
           <p className="mt-1 text-xs text-emerald-800/90 dark:text-emerald-200/90">
             Marca el <strong className="font-semibold">✓</strong> en{" "}
-            <strong>Categorías</strong> cuando pagues cada egreso o cuota (
+            <strong>Egresos recurrentes</strong> (
             {summary.paid}/{summary.total} este mes).
           </p>
         </div>

@@ -22,7 +22,11 @@ export async function middleware(req: NextRequest) {
   ) {
     return NextResponse.next();
   }
-  if (pathname === "/login" || pathname.startsWith("/api/auth")) {
+  if (
+    pathname === "/login" ||
+    pathname.startsWith("/api/auth") ||
+    pathname.startsWith("/api/cron/")
+  ) {
     return NextResponse.next();
   }
 

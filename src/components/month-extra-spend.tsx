@@ -7,6 +7,7 @@ import { formatCop, parseAmountInput } from "@/lib/format";
 import { MONTH_SHORT, monthIndexToSlug } from "@/lib/months";
 import type { MonthIndex } from "@/lib/types";
 import { motion } from "framer-motion";
+import { MonthCharts } from "@/components/month-charts";
 import Link from "next/link";
 import { useMemo, useState } from "react";
 
@@ -46,8 +47,8 @@ export function MonthExtraSpend({ monthIndex }: { monthIndex: MonthIndex }) {
             Gastos adicionales · {MONTH_SHORT[monthIndex]}
           </h1>
           <p className="mt-2 text-sm text-[var(--app-muted)]">
-            Registro rápido del día a día. Los gastos fijos mensuales van en{" "}
-            <strong>Categorías</strong> con el ✓ verde.
+            Registro rápido del día a día. Los gastos fijos con ✓ van en{" "}
+            <strong>Egresos recurrentes</strong> (Categorías).
           </p>
         </motion.div>
         <div className="flex flex-wrap gap-2">
@@ -58,7 +59,7 @@ export function MonthExtraSpend({ monthIndex }: { monthIndex: MonthIndex }) {
               className={`rounded-full px-3 py-2 text-xs font-medium transition-all duration-200 active:scale-95 ${
                 i === monthIndex
                   ? "bg-[var(--app-accent)] text-white shadow-md"
-                  : "border border-[var(--app-border)] bg-white hover:bg-emerald-50/80"
+                  : "border border-[var(--app-border)] bg-[var(--app-card)] hover:bg-[var(--app-accent-soft)]"
               }`}
             >
               {MONTH_SHORT[i]}
@@ -87,23 +88,23 @@ export function MonthExtraSpend({ monthIndex }: { monthIndex: MonthIndex }) {
             <p className="mt-1 text-sm text-[var(--app-fg)]">
               {fixedPaid.total === 0 ? (
                 <>
-                  No hay egresos ni deudas con monto en{" "}
+                  No hay egresos recurrentes con monto en{" "}
                   <strong>{MONTH_SHORT[monthIndex]}</strong>. Configúralos en{" "}
                   <strong>Categorías</strong> si aplica.
                 </>
               ) : (
                 <>
-                  Marcados como pagados:{" "}
+                  ✓ en egresos recurrentes:{" "}
                   <strong
                     className={
-                      fixedPaid.allPaid ? "text-emerald-700" : "text-amber-900"
+                      fixedPaid.allPaid ? "text-emerald-700 dark:text-emerald-400" : "text-amber-900 dark:text-amber-200"
                     }
                   >
                     {fixedPaid.paid}/{fixedPaid.total}
                   </strong>
                   {fixedPaid.allPaid
                     ? " — todo al día."
-                    : " — toca ✓ en cada celda al pagar (verde como en Excel)."}
+                    : " — marca el ✓ pequeño al pagar cada uno."}
                 </>
               )}
             </p>
@@ -155,6 +156,8 @@ export function MonthExtraSpend({ monthIndex }: { monthIndex: MonthIndex }) {
           </motion.p>
         </motion.div>
       </div>
+
+      <MonthCharts transactions={list} />
 
       <div className="rounded-2xl border border-[var(--app-border)] bg-[var(--app-card)] p-6 shadow-sm">
         <h2 className="text-sm font-semibold">Registrar movimiento</h2>

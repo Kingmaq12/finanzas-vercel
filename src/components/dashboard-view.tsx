@@ -6,6 +6,7 @@ import { formatCop } from "@/lib/format";
 import { MONTH_SHORT } from "@/lib/months";
 import { useFinance } from "@/context/finance-context";
 import { motion } from "framer-motion";
+import { DashboardExtraCharts } from "./dashboard-extra-charts";
 import { FlowChart } from "./flow-chart";
 
 const stagger = {
@@ -56,8 +57,7 @@ export function DashboardView() {
           Reporte {data.yearLabel}
         </h1>
         <p className="mt-2 max-w-2xl text-sm text-[var(--app-muted)]">
-          Resumen anual y flujo por mes. En <strong>Categorías</strong> marca cada mes en verde
-          cuando pagaste un gasto fijo; aquí ves el impacto en totales.
+          Resumen anual y varias vistas. El ✓ verde es solo en <strong>Egresos recurrentes</strong>.
         </p>
       </motion.div>
 
@@ -119,6 +119,8 @@ export function DashboardView() {
         </div>
       </motion.section>
 
+      <DashboardExtraCharts rollups={rollups} />
+
       <section className="overflow-x-auto rounded-2xl border border-[var(--app-border)] bg-[var(--app-card)] shadow-sm">
         <table className="w-full min-w-[900px] border-collapse text-sm">
           <thead>
@@ -134,9 +136,9 @@ export function DashboardView() {
             </tr>
           </thead>
           <tbody>
-            <tr className="border-b border-[var(--app-border)] bg-emerald-50/50 text-xs">
-              <td className="sticky left-0 z-10 bg-emerald-50/95 px-4 py-2.5 whitespace-nowrap backdrop-blur-[2px]">
-                Fijos pagados (✓ egresos + deudas)
+            <tr className="border-b border-[var(--app-border)] bg-emerald-50/50 text-xs dark:bg-emerald-950/25">
+              <td className="sticky left-0 z-10 bg-emerald-50/95 px-4 py-2.5 whitespace-nowrap backdrop-blur-[2px] dark:bg-emerald-950/40">
+                Egresos fijos ✓ (recurrentes)
               </td>
               {fixedPaidRow.map(({ monthIndex, paid, total }) => (
                 <td

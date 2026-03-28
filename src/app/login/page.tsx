@@ -1,5 +1,6 @@
 "use client";
 
+import { ThemeToggle } from "@/components/theme-toggle";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 
@@ -59,7 +60,10 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="flex min-h-full flex-col items-center justify-center bg-[var(--app-bg)] px-4 py-12">
+    <div className="relative flex min-h-full flex-col items-center justify-center bg-[var(--app-bg)] px-4 py-12">
+      <div className="absolute right-4 top-4">
+        <ThemeToggle />
+      </div>
       <div className="w-full max-w-sm rounded-2xl border border-[var(--app-border)] bg-[var(--app-card)] p-8 shadow-sm">
         <h1 className="text-center text-xl font-semibold tracking-tight">
           Acceso

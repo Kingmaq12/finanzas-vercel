@@ -12,6 +12,7 @@
     "start": "next start",
     "lint": "eslint",
     "db:push": "drizzle-kit push",
+    "db:ensure-household": "tsx scripts/ensure-household.ts",
     "db:migrate-multi-user": "tsx scripts/migrate-to-multi-user.ts",
     "db:copy-legacy": "tsx scripts/copy-legacy-payload-to-user.ts",
     "db:create-user": "tsx scripts/create-user.ts",
@@ -27,7 +28,8 @@
     "next": "16.2.1",
     "react": "19.2.4",
     "react-dom": "19.2.4",
-    "recharts": "^3.8.1"
+    "recharts": "^3.8.1",
+    "resend": "^6.9.4"
   },
   "devDependencies": {
     "@tailwindcss/postcss": "^4",

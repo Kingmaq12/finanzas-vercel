@@ -24,10 +24,10 @@ export function ProjectsView() {
   return (
     <div className="space-y-10">
       <div>
-        <h1 className="text-2xl font-semibold tracking-tight">Proyectos y metas</h1>
+        <h1 className="text-2xl font-semibold tracking-tight">Proyectos personales</h1>
         <p className="mt-2 max-w-2xl text-sm text-[var(--app-muted)]">
-          Equivalente flexible a tu hoja &quot;Otros&quot;: viajes u objetivos con partidas y
-          totales. No entran automáticamente en el disponible; sirven para planificar.
+          Solo tú los ves (van con tu usuario). Para Casa, mascota u objetivos del hogar usa{" "}
+          <strong>Compartido</strong>. Aquí: viajes y metas privadas con partidas y totales.
         </p>
         <div className="mt-4 flex max-w-md gap-2">
           <input

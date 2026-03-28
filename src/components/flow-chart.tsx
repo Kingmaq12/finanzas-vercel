@@ -27,13 +27,16 @@ export function FlowChart({ rollups }: { rollups: MonthRollup[] }) {
       <ResponsiveContainer width="100%" height="100%">
         <BarChart data={data} margin={{ top: 8, right: 8, left: 8, bottom: 0 }}>
           <CartesianGrid strokeDasharray="3 3" className="stroke-[var(--app-border)]" />
-          <XAxis dataKey="mes" tick={{ fontSize: 11 }} />
+          <XAxis
+            dataKey="mes"
+            tick={{ fontSize: 11, fill: "var(--app-muted)" }}
+          />
           <YAxis
             tickFormatter={(v) =>
               v >= 1_000_000 ? `${(v / 1_000_000).toFixed(1)}M` : `${Math.round(v / 1000)}k`
             }
             width={48}
-            tick={{ fontSize: 11 }}
+            tick={{ fontSize: 11, fill: "var(--app-muted)" }}
           />
           <Tooltip
             formatter={(value) =>
@@ -43,6 +46,8 @@ export function FlowChart({ rollups }: { rollups: MonthRollup[] }) {
               borderRadius: "8px",
               border: "1px solid var(--app-border)",
               fontSize: "12px",
+              background: "var(--app-card)",
+              color: "var(--app-fg)",
             }}
           />
           <Legend wrapperStyle={{ fontSize: "12px" }} />

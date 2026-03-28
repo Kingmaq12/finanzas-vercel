@@ -13,6 +13,7 @@ const links = [
   { href: "/categorias", label: "Categorías", short: "Cats" },
   { href: "/mes/enero", label: "Por mes", short: "Mes" },
   { href: "/proyectos", label: "Proyectos", short: "Metas" },
+  { href: "/compartido", label: "Compartido", short: "Hogar" },
   { href: "/datos", label: "Datos", short: "Datos" },
 ] as const;
 
@@ -76,7 +77,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
           </nav>
         </aside>
 
-        <div className="flex min-h-[100dvh] min-w-0 flex-1 flex-col pb-[calc(4.5rem+env(safe-area-inset-bottom))] md:pb-0">
+        <div className="flex min-h-[100dvh] min-w-0 flex-1 flex-col pb-[calc(7.25rem+env(safe-area-inset-bottom))] md:pb-0">
           <header className="sticky top-0 z-10 flex flex-wrap items-center justify-between gap-3 border-b border-[var(--app-border)] bg-[var(--app-header)]/95 px-4 py-3 backdrop-blur-md md:hidden">
             <div className="min-w-0 flex-1">
               <p className="text-xs font-medium uppercase tracking-wide text-[var(--app-muted)]">
@@ -96,7 +97,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
           </main>
 
           <nav
-            className="fixed bottom-0 left-0 right-0 z-30 flex border-t border-[var(--app-border)] bg-[var(--app-card)]/95 pb-[env(safe-area-inset-bottom)] backdrop-blur-md md:hidden"
+            className="fixed bottom-0 left-0 right-0 z-30 grid grid-cols-3 border-t border-[var(--app-border)] bg-[var(--app-card)]/95 pb-[env(safe-area-inset-bottom)] backdrop-blur-md md:hidden"
             aria-label="Principal"
           >
             {links.map((l) => {
@@ -111,11 +112,11 @@ export function AppShell({ children }: { children: React.ReactNode }) {
                 <Link
                   key={l.href}
                   href={href}
-                  className={`tap-target flex min-h-[3.5rem] flex-1 flex-col items-center justify-center gap-0.5 px-1 text-[10px] font-medium leading-tight ${
+                  className={`tap-target flex min-h-[3.25rem] flex-col items-center justify-center gap-0.5 px-1 text-[9px] font-medium leading-tight ${
                     active ? "text-[var(--app-accent)]" : "text-[var(--app-muted)]"
                   }`}
                 >
-                  <span className="text-lg leading-none" aria-hidden>
+                  <span className="text-base leading-none" aria-hidden>
                     {l.short === "Inicio"
                       ? "⌂"
                       : l.short === "Cats"
@@ -124,7 +125,9 @@ export function AppShell({ children }: { children: React.ReactNode }) {
                           ? "▦"
                           : l.short === "Metas"
                             ? "◇"
-                            : "⎘"}
+                            : l.short === "Hogar"
+                              ? "🏠"
+                              : "⎘"}
                   </span>
                   <span>{l.short}</span>
                 </Link>
