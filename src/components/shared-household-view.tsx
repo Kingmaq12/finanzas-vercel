@@ -61,9 +61,7 @@ export function SharedHouseholdView() {
   }, []);
 
   useEffect(() => {
-    /* eslint-disable react-hooks/set-state-in-effect -- fetch inicial hogar compartido */
     void loadAll();
-    /* eslint-enable react-hooks/set-state-in-effect */
   }, [loadAll]);
 
   const scheduleSave = useCallback((next: SharedHouseholdPayload) => {
@@ -98,6 +96,57 @@ export function SharedHouseholdView() {
   const [evNotes, setEvNotes] = useState("");
   const [evNotify, setEvNotify] = useState(false);
   const [evMinutes, setEvMinutes] = useState("1440");
+  const [notifyRunLoading, setNotifyRunLoading] = useState(false);
+  const [notifyRunMsg, setNotifyRunMsg] = useState<string | null>(null);
+
+  async function runCalendarNotifyNow() {
+    setNotifyRunMsg(null);
+    setNotifyRunLoading(true);
+    try {
+      const res = await fetch("/api/household/calendar-notify-now", {
+        method: "POST",
+        credentials: "include",
+      });
+      const j = (await res.json().catch(() => ({}))) as {
+        ok?: boolean;
+        sent?: number;
+        pending?: number;
+        waitingForWindow?: number;
+        errors?: string[];
+        error?: string;
+      };
+      if (!res.ok) {
+        setNotifyRunMsg(j.error ?? "No se pudo ejecutar.");
+        return;
+      }
+      const sent = j.sent ?? 0;
+      const pending = j.pending ?? 0;
+      const wait = j.waitingForWindow ?? 0;
+      if ((j.errors?.length ?? 0) > 0) {
+        setNotifyRunMsg(
+          `${sent > 0 ? `Se enviaron ${sent}, pero hubo fallos: ` : ""}${j.errors!.join(" ")}`,
+        );
+        void loadAll();
+        return;
+      }
+      if (sent > 0) {
+        setNotifyRunMsg(`Listo: se enviaron ${sent} aviso(s) a Telegram.`);
+      } else if (pending === 0) {
+        setNotifyRunMsg("No hay eventos futuros con aviso pendiente.");
+      } else if (wait > 0) {
+        setNotifyRunMsg(
+          `Aún no toca: ${wait} evento(s) están antes de la ventana (“X minutos antes”). Espera o vuelve a pulsar cuando llegue esa hora.`,
+        );
+      } else {
+        setNotifyRunMsg(
+          "Ningún aviso enviado. Si el evento ya pasó sin disparar el aviso, no se puede recuperar; crea uno nuevo o más adelante en el tiempo.",
+        );
+      }
+      void loadAll();
+    } finally {
+      setNotifyRunLoading(false);
+    }
+  }
 
   async function addEvent(e: React.FormEvent) {
     e.preventDefault();
@@ -112,7 +161,10 @@ export function SharedHouseholdView() {
         notes: evNotes.trim() || undefined,
         notifyEnabled: evNotify,
         notifyEmails: [],
-        notifyMinutesBefore: Number(evMinutes) || 1440,
+        notifyMinutesBefore: (() => {
+          const n = Number(evMinutes);
+          return Number.isFinite(n) && n >= 0 ? n : 1440;
+        })(),
       }),
     });
     if (res.ok) {
@@ -205,12 +257,31 @@ export function SharedHouseholdView() {
           <section className="rounded-2xl border border-[var(--app-border)] bg-[var(--app-card)] p-6 shadow-sm">
             <h2 className="text-sm font-semibold">Recordatorios (Telegram)</h2>
             <p className="mt-1 text-xs text-[var(--app-muted)]">
-              El cron revisa la ventana de aviso y envía por Telegram (en Hobby Vercel suele ser 1× al día;
-              se puede usar un ping horario externo). Variables en el servidor:{" "}
-              <code className="text-[10px]">TELEGRAM_BOT_TOKEN</code> y{" "}
-              <code className="text-[10px]">TELEGRAM_CHAT_ID</code>. Puedes probar el envío desde{" "}
+              En <strong>Vercel Hobby</strong> el cron oficial solo corre <strong>una vez al día</strong>, así
+              que un aviso de “1 minuto antes” <strong>no se dispara solo</strong> salvo que coincidas con esa
+              hora. Opciones: subir a Pro, un <strong>ping externo</strong> cada pocos minutos al mismo
+              endpoint que el cron, o usar el botón de abajo cuando estés en la ventana de aviso.
+            </p>
+            <p className="mt-2 text-xs text-[var(--app-muted)]">
+              Servidor: <code className="text-[10px]">TELEGRAM_BOT_TOKEN</code>,{" "}
+              <code className="text-[10px]">TELEGRAM_CHAT_ID</code>. Prueba genérica del bot en{" "}
               <strong>Datos</strong>.
             </p>
+            <div className="mt-4 flex flex-wrap items-center gap-3">
+              <button
+                type="button"
+                disabled={notifyRunLoading}
+                className="rounded-lg bg-[var(--app-accent)] px-4 py-2 text-sm font-medium text-white disabled:opacity-60"
+                onClick={() => void runCalendarNotifyNow()}
+              >
+                {notifyRunLoading ? "Comprobando…" : "Enviar avisos que toquen ahora"}
+              </button>
+            </div>
+            {notifyRunMsg && (
+              <p className="mt-3 text-xs text-[var(--app-muted)]" role="status">
+                {notifyRunMsg}
+              </p>
+            )}
           </section>
 
           <section className="rounded-2xl border border-[var(--app-border)] bg-[var(--app-card)] p-6 shadow-sm">

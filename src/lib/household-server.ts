@@ -126,3 +126,21 @@ export async function listEventsPendingNotification() {
       ),
     );
 }
+
+/** Igual que listEventsPendingNotification pero solo para un hogar (p. ej. botón “avisar ahora”). */
+export async function listEventsPendingNotificationForHousehold(householdId: string) {
+  const db = getDb();
+  if (!db) return [];
+  const now = new Date();
+  return db
+    .select()
+    .from(householdCalendarEvents)
+    .where(
+      and(
+        eq(householdCalendarEvents.householdId, householdId),
+        eq(householdCalendarEvents.notifyEnabled, true),
+        isNull(householdCalendarEvents.lastNotifiedAt),
+        gt(householdCalendarEvents.startsAt, now),
+      ),
+    );
+}

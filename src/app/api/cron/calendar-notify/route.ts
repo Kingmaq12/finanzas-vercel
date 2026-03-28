@@ -1,5 +1,6 @@
-import { listEventsPendingNotification, markEventNotified } from "@/lib/household-server";
-import { isTelegramConfigured, sendTelegramMessage } from "@/lib/telegram-client";
+import { dispatchDueCalendarNotifications } from "@/lib/calendar-notify-dispatch";
+import { listEventsPendingNotification } from "@/lib/household-server";
+import { isTelegramConfigured } from "@/lib/telegram-client";
 import { NextResponse } from "next/server";
 
 /**
@@ -24,37 +25,16 @@ export async function GET(req: Request) {
     });
   }
 
-  const events = await listEventsPendingNotification();
-  const now = Date.now();
-  let sent = 0;
-  const errors: string[] = [];
+  const rows = await listEventsPendingNotification();
+  const events = rows.map((r) => ({
+    id: r.id,
+    title: r.title,
+    startsAt: r.startsAt,
+    notes: r.notes,
+    notifyMinutesBefore: r.notifyMinutesBefore,
+  }));
 
-  for (const ev of events) {
-    const msBefore = (ev.notifyMinutesBefore ?? 1440) * 60_000;
-    const notifyAt = ev.startsAt.getTime() - msBefore;
-    if (now < notifyAt) continue;
-
-    try {
-      const textBody = [
-        `📅 ${ev.title}`,
-        `Cuándo: ${ev.startsAt.toLocaleString("es-CO", { dateStyle: "full", timeStyle: "short" })}`,
-        ev.notes ? `Notas: ${ev.notes}` : "",
-        "",
-        "— Finanzas (hogar compartido)",
-      ]
-        .filter(Boolean)
-        .join("\n");
-      const result = await sendTelegramMessage(textBody);
-      if (!result.ok) {
-        errors.push(`${ev.id}: ${result.error}`);
-        continue;
-      }
-      await markEventNotified(ev.id);
-      sent += 1;
-    } catch (e) {
-      errors.push(`${ev.id}: ${e instanceof Error ? e.message : String(e)}`);
-    }
-  }
+  const { sent, errors } = await dispatchDueCalendarNotifications(events);
 
   return NextResponse.json({
     ok: true,
