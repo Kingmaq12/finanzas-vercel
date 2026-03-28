@@ -12,6 +12,7 @@
     "start": "next start",
     "lint": "eslint",
     "db:push": "drizzle-kit push",
+    "db:apply-household-ddl": "tsx scripts/apply-household-ddl.ts",
     "db:ensure-household": "tsx scripts/ensure-household.ts",
     "db:migrate-multi-user": "tsx scripts/migrate-to-multi-user.ts",
     "db:copy-legacy": "tsx scripts/copy-legacy-payload-to-user.ts",
