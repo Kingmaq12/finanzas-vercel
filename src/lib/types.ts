@@ -8,6 +8,8 @@ export interface CategoryLine {
   kind: CategoryKind;
   /** Monto por mes (misma fila que en tu Excel por categoría). */
   byMonth: Record<MonthIndex, number>;
+  /** Mes marcado como pagado / listo (celda verde como en tu Excel). */
+  paidByMonth?: Partial<Record<MonthIndex, boolean>>;
 }
 
 export interface ExtraTransaction {

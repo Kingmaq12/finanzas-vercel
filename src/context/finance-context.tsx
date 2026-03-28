@@ -50,6 +50,7 @@ type FinanceContextValue = {
   replaceAll: (d: FinanceData | FinanceBundle) => void;
   reset: () => void;
   setCategoryAmount: (categoryId: string, month: MonthIndex, value: number) => void;
+  toggleCategoryPaid: (categoryId: string, month: MonthIndex) => void;
   addCategory: (name: string, kind: CategoryKind) => void;
   removeCategory: (categoryId: string) => void;
   renameCategory: (categoryId: string, name: string) => void;
@@ -200,6 +201,23 @@ export function FinanceProvider({ children }: { children: React.ReactNode }) {
     [updateActive],
   );
 
+  const toggleCategoryPaid = useCallback(
+    (categoryId: string, month: MonthIndex) => {
+      updateActive((d) => ({
+        ...d,
+        categories: d.categories.map((c) => {
+          if (c.id !== categoryId) return c;
+          const cur = c.paidByMonth?.[month] ?? false;
+          return {
+            ...c,
+            paidByMonth: { ...c.paidByMonth, [month]: !cur },
+          };
+        }),
+      }));
+    },
+    [updateActive],
+  );
+
   const addCategory = useCallback(
     (name: string, kind: CategoryKind) => {
       const empty: Record<MonthIndex, number> = {
@@ -221,6 +239,7 @@ export function FinanceProvider({ children }: { children: React.ReactNode }) {
         name,
         kind,
         byMonth: empty,
+        paidByMonth: {},
       };
       updateActive((d) => ({ ...d, categories: [...d.categories, line] }));
     },
@@ -389,6 +408,7 @@ export function FinanceProvider({ children }: { children: React.ReactNode }) {
       replaceAll,
       reset,
       setCategoryAmount,
+      toggleCategoryPaid,
       addCategory,
       removeCategory,
       renameCategory,
@@ -414,6 +434,7 @@ export function FinanceProvider({ children }: { children: React.ReactNode }) {
       replaceAll,
       reset,
       setCategoryAmount,
+      toggleCategoryPaid,
       addCategory,
       removeCategory,
       renameCategory,

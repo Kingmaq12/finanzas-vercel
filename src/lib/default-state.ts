@@ -29,6 +29,7 @@ function cat(
     name,
     kind,
     byMonth: { ...z(), ...byMonth },
+    paidByMonth: {},
   };
 }
 

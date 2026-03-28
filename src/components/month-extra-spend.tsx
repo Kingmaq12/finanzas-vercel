@@ -5,6 +5,7 @@ import { useFinance } from "@/context/finance-context";
 import { formatCop, parseAmountInput } from "@/lib/format";
 import { MONTH_SHORT, monthIndexToSlug } from "@/lib/months";
 import type { MonthIndex } from "@/lib/types";
+import { motion } from "framer-motion";
 import Link from "next/link";
 import { useMemo, useState } from "react";
 
@@ -34,23 +35,28 @@ export function MonthExtraSpend({ monthIndex }: { monthIndex: MonthIndex }) {
   return (
     <div className="space-y-8">
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-        <div>
+        <motion.div
+          initial={{ opacity: 0, y: 8 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.35 }}
+        >
           <h1 className="text-2xl font-semibold tracking-tight">
             Gastos adicionales · {MONTH_SHORT[monthIndex]}
           </h1>
           <p className="mt-2 text-sm text-[var(--app-muted)]">
-            Como la hoja mensual de tu Excel: nombre, valor y fecha opcional.
+            Registro rápido del día a día. Los gastos fijos mensuales van en{" "}
+            <strong>Categorías</strong> con el ✓ verde.
           </p>
-        </div>
+        </motion.div>
         <div className="flex flex-wrap gap-2">
           {MONTH_SHORT.map((_, i) => (
             <Link
               key={i}
               href={`/mes/${monthIndexToSlug(i as MonthIndex)}`}
-              className={`rounded-full px-3 py-1 text-xs font-medium ${
+              className={`rounded-full px-3 py-2 text-xs font-medium transition-all duration-200 active:scale-95 ${
                 i === monthIndex
-                  ? "bg-[var(--app-accent)] text-white"
-                  : "border border-[var(--app-border)] bg-white hover:bg-black/[0.03]"
+                  ? "bg-[var(--app-accent)] text-white shadow-md"
+                  : "border border-[var(--app-border)] bg-white hover:bg-emerald-50/80"
               }`}
             >
               {MONTH_SHORT[i]}
@@ -59,26 +65,46 @@ export function MonthExtraSpend({ monthIndex }: { monthIndex: MonthIndex }) {
         </div>
       </div>
 
-      <div className="grid gap-4 sm:grid-cols-3">
-        <div className="rounded-xl border border-[var(--app-border)] bg-[var(--app-card)] p-4">
+      <div className="grid gap-4 sm:grid-cols-2">
+        <motion.div
+          className="rounded-xl border border-[var(--app-border)] bg-[var(--app-card)] p-4 shadow-sm"
+          initial={{ opacity: 0, scale: 0.98 }}
+          animate={{ opacity: 1, scale: 1 }}
+          transition={{ type: "spring", stiffness: 400, damping: 30 }}
+        >
           <p className="text-xs uppercase tracking-wide text-[var(--app-muted)]">
             Suma gastos adicionales
           </p>
-          <p className="mt-1 text-xl font-semibold tabular-nums text-rose-700">
+          <motion.p
+            key={rollup.extraSpend}
+            initial={{ opacity: 0.4 }}
+            animate={{ opacity: 1 }}
+            className="mt-1 text-xl font-semibold tabular-nums text-rose-700"
+          >
             {formatCop(rollup.extraSpend)}
-          </p>
-        </div>
-        <div className="rounded-xl border border-[var(--app-border)] bg-[var(--app-card)] p-4">
+          </motion.p>
+        </motion.div>
+        <motion.div
+          className="rounded-xl border border-[var(--app-border)] bg-[var(--app-card)] p-4 shadow-sm"
+          initial={{ opacity: 0, scale: 0.98 }}
+          animate={{ opacity: 1, scale: 1 }}
+          transition={{ type: "spring", stiffness: 400, damping: 30, delay: 0.05 }}
+        >
           <p className="text-xs uppercase tracking-wide text-[var(--app-muted)]">
             Disponible mes
           </p>
-          <p className="mt-1 text-xl font-semibold tabular-nums text-indigo-700">
+          <motion.p
+            key={rollup.disponible}
+            initial={{ opacity: 0.4 }}
+            animate={{ opacity: 1 }}
+            className="mt-1 text-xl font-semibold tabular-nums text-indigo-700"
+          >
             {formatCop(rollup.disponible)}
-          </p>
-        </div>
+          </motion.p>
+        </motion.div>
       </div>
 
-      <div className="rounded-2xl border border-[var(--app-border)] bg-[var(--app-card)] p-6">
+      <div className="rounded-2xl border border-[var(--app-border)] bg-[var(--app-card)] p-6 shadow-sm">
         <h2 className="text-sm font-semibold">Registrar movimiento</h2>
         <form
           className="mt-4 grid gap-3 sm:grid-cols-[1fr_120px_140px_auto]"
@@ -98,13 +124,13 @@ export function MonthExtraSpend({ monthIndex }: { monthIndex: MonthIndex }) {
           }}
         >
           <input
-            className="rounded-lg border border-[var(--app-border)] px-3 py-2 text-sm"
+            className="rounded-lg border border-[var(--app-border)] px-3 py-2 text-sm transition-shadow focus:ring-2 focus:ring-[var(--app-accent-soft)]"
             placeholder="Nombre / concepto"
             value={name}
             onChange={(e) => setName(e.target.value)}
           />
           <input
-            className="rounded-lg border border-[var(--app-border)] px-3 py-2 text-sm"
+            className="rounded-lg border border-[var(--app-border)] px-3 py-2 text-sm transition-shadow focus:ring-2 focus:ring-[var(--app-accent-soft)]"
             placeholder="Valor"
             inputMode="numeric"
             value={amount}
@@ -116,12 +142,13 @@ export function MonthExtraSpend({ monthIndex }: { monthIndex: MonthIndex }) {
             value={date}
             onChange={(e) => setDate(e.target.value)}
           />
-          <button
+          <motion.button
             type="submit"
-            className="rounded-lg bg-[var(--app-accent)] px-4 py-2 text-sm font-medium text-white"
+            whileTap={{ scale: 0.96 }}
+            className="rounded-lg bg-[var(--app-accent)] px-4 py-2 text-sm font-medium text-white shadow-sm transition-shadow hover:shadow-md"
           >
             Añadir
-          </button>
+          </motion.button>
         </form>
 
         <div className="mt-8 overflow-x-auto">
@@ -136,7 +163,14 @@ export function MonthExtraSpend({ monthIndex }: { monthIndex: MonthIndex }) {
             </thead>
             <tbody>
               {list.map((t) => (
-                <tr key={t.id} className="border-b border-[var(--app-border)]">
+                <motion.tr
+                  key={t.id}
+                  layout
+                  initial={{ opacity: 0, x: -10 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  transition={{ type: "spring", stiffness: 420, damping: 32 }}
+                  className="border-b border-[var(--app-border)]"
+                >
                   <td className="py-2 pr-2">
                     <input
                       className="w-full min-w-[10rem] rounded border border-transparent px-1 py-0.5 outline-none focus:border-[var(--app-border)]"
@@ -174,13 +208,13 @@ export function MonthExtraSpend({ monthIndex }: { monthIndex: MonthIndex }) {
                   <td className="py-2 text-right">
                     <button
                       type="button"
-                      className="text-rose-600 hover:underline"
+                      className="text-rose-600 transition-colors hover:text-rose-800"
                       onClick={() => removeExtraTransaction(t.id)}
                     >
                       Quitar
                     </button>
                   </td>
-                </tr>
+                </motion.tr>
               ))}
             </tbody>
           </table>

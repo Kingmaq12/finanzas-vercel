@@ -4,7 +4,25 @@ import { allMonthRollups, average, yearlyTotals } from "@/lib/aggregates";
 import { formatCop } from "@/lib/format";
 import { MONTH_SHORT } from "@/lib/months";
 import { useFinance } from "@/context/finance-context";
+import { motion } from "framer-motion";
 import { FlowChart } from "./flow-chart";
+
+const stagger = {
+  hidden: { opacity: 0 },
+  show: {
+    opacity: 1,
+    transition: { staggerChildren: 0.07, delayChildren: 0.05 },
+  },
+};
+
+const item = {
+  hidden: { opacity: 0, y: 14 },
+  show: {
+    opacity: 1,
+    y: 0,
+    transition: { type: "spring" as const, stiffness: 380, damping: 28 },
+  },
+};
 
 export function DashboardView() {
   const { ready, data } = useFinance();
@@ -27,34 +45,52 @@ export function DashboardView() {
 
   return (
     <div className="space-y-10">
-      <div>
+      <motion.div
+        initial={{ opacity: 0, y: 10 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.4, ease: [0.22, 1, 0.36, 1] }}
+      >
         <h1 className="text-2xl font-semibold tracking-tight md:text-3xl">
           Reporte {data.yearLabel}
         </h1>
         <p className="mt-2 max-w-2xl text-sm text-[var(--app-muted)]">
-          Vista equivalente a tu hoja General: totales por mes, disponible y gráfico de
-          flujo. Con base de datos en Vercel, los cambios se guardan también en la nube.
+          Resumen anual y flujo por mes. En <strong>Categorías</strong> marca cada mes en verde
+          cuando pagaste un gasto fijo; aquí ves el impacto en totales.
         </p>
-      </div>
+      </motion.div>
 
-      <section className="grid gap-4 sm:grid-cols-3">
-        <div className="rounded-2xl border border-[var(--app-border)] bg-[var(--app-card)] p-5 shadow-sm">
+      <motion.section
+        className="grid gap-4 sm:grid-cols-3"
+        variants={stagger}
+        initial="hidden"
+        animate="show"
+      >
+        <motion.div
+          variants={item}
+          className="rounded-2xl border border-[var(--app-border)] bg-[var(--app-card)] p-5 shadow-sm"
+        >
           <p className="text-xs font-medium uppercase tracking-wide text-[var(--app-muted)]">
             Ingresos (año)
           </p>
           <p className="mt-2 text-2xl font-semibold tabular-nums text-emerald-700">
             {formatCop(year.totalIncome)}
           </p>
-        </div>
-        <div className="rounded-2xl border border-[var(--app-border)] bg-[var(--app-card)] p-5 shadow-sm">
+        </motion.div>
+        <motion.div
+          variants={item}
+          className="rounded-2xl border border-[var(--app-border)] bg-[var(--app-card)] p-5 shadow-sm"
+        >
           <p className="text-xs font-medium uppercase tracking-wide text-[var(--app-muted)]">
             Egresos + deudas + adicionales
           </p>
           <p className="mt-2 text-2xl font-semibold tabular-nums text-rose-700">
             {formatCop(year.totalExpense + year.totalDebt + year.extraSpend)}
           </p>
-        </div>
-        <div className="rounded-2xl border border-[var(--app-border)] bg-[var(--app-card)] p-5 shadow-sm">
+        </motion.div>
+        <motion.div
+          variants={item}
+          className="rounded-2xl border border-[var(--app-border)] bg-[var(--app-card)] p-5 shadow-sm"
+        >
           <p className="text-xs font-medium uppercase tracking-wide text-[var(--app-muted)]">
             Disponible (año) · prom. mensual
           </p>
@@ -64,17 +100,22 @@ export function DashboardView() {
           <p className="mt-1 text-xs text-[var(--app-muted)]">
             Promedio: {formatCop(avgDisp)}
           </p>
-        </div>
-      </section>
+        </motion.div>
+      </motion.section>
 
-      <section className="rounded-2xl border border-[var(--app-border)] bg-[var(--app-card)] p-6 shadow-sm">
+      <motion.section
+        className="rounded-2xl border border-[var(--app-border)] bg-[var(--app-card)] p-6 shadow-sm"
+        initial={{ opacity: 0, y: 16 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.15, duration: 0.45, ease: [0.22, 1, 0.36, 1] }}
+      >
         <h2 className="text-sm font-semibold uppercase tracking-wide text-[var(--app-muted)]">
           Flujo mensual
         </h2>
         <div className="mt-4 min-h-[280px] min-w-0 w-full sm:min-h-[320px]">
           <FlowChart rollups={rollups} />
         </div>
-      </section>
+      </motion.section>
 
       <section className="overflow-x-auto rounded-2xl border border-[var(--app-border)] bg-[var(--app-card)] shadow-sm">
         <table className="w-full min-w-[900px] border-collapse text-sm">
