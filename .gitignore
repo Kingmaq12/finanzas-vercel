@@ -20,6 +20,9 @@
 # production
 /build
 
+# DB migration dumps (pueden contener datos personales)
+/backups/
+
 # misc
 .DS_Store
 *.pem
