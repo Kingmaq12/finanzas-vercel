@@ -15,6 +15,9 @@ export function DataTools() {
     authEnabled: boolean;
     authenticated: boolean;
   } | null>(null);
+  const [testEmail, setTestEmail] = useState("");
+  const [testLoading, setTestLoading] = useState(false);
+  const [testMsg, setTestMsg] = useState<string | null>(null);
 
   useEffect(() => {
     fetch("/api/auth/session")
@@ -59,6 +62,31 @@ export function DataTools() {
     await fetch("/api/auth/logout", { method: "POST", credentials: "include" });
     router.push("/login");
     router.refresh();
+  }
+
+  async function sendTestResend() {
+    setTestMsg(null);
+    setTestLoading(true);
+    try {
+      const res = await fetch("/api/email/test", {
+        method: "POST",
+        credentials: "include",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(
+          testEmail.trim() ? { to: testEmail.trim() } : {},
+        ),
+      });
+      const j = (await res.json().catch(() => ({}))) as { ok?: boolean; error?: string; to?: string };
+      if (!res.ok) {
+        setTestMsg(j.error ?? "Error al enviar");
+        return;
+      }
+      setTestMsg(`Enviado de prueba a ${j.to ?? "destino"}. Revisa spam.`);
+    } catch {
+      setTestMsg("Error de red.");
+    } finally {
+      setTestLoading(false);
+    }
   }
 
   if (!ready) {
@@ -159,15 +187,48 @@ export function DataTools() {
       </div>
 
       {session?.authEnabled && session.authenticated && (
-        <div className="space-y-4 rounded-2xl border border-slate-200 bg-slate-50 p-6">
-          <h2 className="text-sm font-semibold text-slate-800">Sesión</h2>
-          <p className="text-sm text-slate-600">
+        <div className="space-y-4 rounded-2xl border border-[var(--app-border)] bg-[var(--app-card)] p-6">
+          <h2 className="text-sm font-semibold uppercase tracking-wide text-[var(--app-muted)]">
+            Correo (Resend)
+          </h2>
+          <p className="text-sm text-[var(--app-muted)]">
+            La clave va en el servidor como <code className="text-xs">RESEND_API_KEY</code> (no en el
+            código). También necesitas <code className="text-xs">RESEND_FROM_EMAIL</code> (p. ej.{" "}
+            <code className="text-xs">onboarding@resend.dev</code>).
+          </p>
+          <input
+            type="email"
+            className="w-full rounded-lg border border-[var(--app-border)] bg-[var(--app-input-bg)] px-3 py-2 text-sm"
+            placeholder="Destino (opcional si defines RESEND_TEST_TO en Vercel)"
+            value={testEmail}
+            onChange={(e) => setTestEmail(e.target.value)}
+          />
+          {testMsg && (
+            <p className="text-sm text-[var(--app-muted)]" role="status">
+              {testMsg}
+            </p>
+          )}
+          <button
+            type="button"
+            disabled={testLoading}
+            className="tap-target rounded-lg border border-[var(--app-border)] bg-[var(--app-input-bg)] px-4 py-3 text-sm font-medium disabled:opacity-60"
+            onClick={() => void sendTestResend()}
+          >
+            {testLoading ? "Enviando…" : "Enviar correo de prueba"}
+          </button>
+        </div>
+      )}
+
+      {session?.authEnabled && session.authenticated && (
+        <div className="space-y-4 rounded-2xl border border-slate-200 bg-slate-50 p-6 dark:border-[var(--app-border)] dark:bg-[var(--app-card)]">
+          <h2 className="text-sm font-semibold text-slate-800 dark:text-[var(--app-fg)]">Sesión</h2>
+          <p className="text-sm text-slate-600 dark:text-[var(--app-muted)]">
             Cierra sesión en este dispositivo (obligatorio si usas contraseña en el
             servidor).
           </p>
           <button
             type="button"
-            className="tap-target rounded-lg border border-slate-300 bg-white px-4 py-3 text-sm font-medium text-slate-800"
+            className="tap-target rounded-lg border border-slate-300 bg-white px-4 py-3 text-sm font-medium text-slate-800 dark:border-[var(--app-border)] dark:bg-[var(--app-input-bg)] dark:text-[var(--app-fg)]"
             onClick={() => void logout()}
           >
             Cerrar sesión

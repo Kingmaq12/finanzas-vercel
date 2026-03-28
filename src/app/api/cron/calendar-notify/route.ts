@@ -1,6 +1,6 @@
 import { listEventsPendingNotification, markEventNotified } from "@/lib/household-server";
+import { getResendFromEmail, sendResendEmail } from "@/lib/resend-client";
 import { NextResponse } from "next/server";
-import { Resend } from "resend";
 
 /**
  * Vercel Cron: define CRON_SECRET y (opcional) RESEND_API_KEY + RESEND_FROM_EMAIL.
@@ -16,9 +16,7 @@ export async function GET(req: Request) {
     return NextResponse.json({ error: "No autorizado" }, { status: 401 });
   }
 
-  const apiKey = process.env.RESEND_API_KEY;
-  const from = process.env.RESEND_FROM_EMAIL;
-  if (!apiKey || !from) {
+  if (!process.env.RESEND_API_KEY?.trim() || !getResendFromEmail()) {
     return NextResponse.json({
       ok: true,
       skipped: true,
@@ -26,7 +24,6 @@ export async function GET(req: Request) {
     });
   }
 
-  const resend = new Resend(apiKey);
   const events = await listEventsPendingNotification();
   const now = Date.now();
   let sent = 0;
@@ -40,22 +37,22 @@ export async function GET(req: Request) {
     if (now < notifyAt) continue;
 
     try {
-      const { error } = await resend.emails.send({
-        from,
+      const textBody = [
+        `Evento: ${ev.title}`,
+        `Cuándo: ${ev.startsAt.toLocaleString("es-CO", { dateStyle: "full", timeStyle: "short" })}`,
+        ev.notes ? `Notas: ${ev.notes}` : "",
+        "",
+        "— Finanzas (hogar compartido)",
+      ]
+        .filter(Boolean)
+        .join("\n");
+      const result = await sendResendEmail({
         to: emails,
         subject: `Recordatorio: ${ev.title}`,
-        text: [
-          `Evento: ${ev.title}`,
-          `Cuándo: ${ev.startsAt.toLocaleString("es-CO", { dateStyle: "full", timeStyle: "short" })}`,
-          ev.notes ? `Notas: ${ev.notes}` : "",
-          "",
-          "— Finanzas (hogar compartido)",
-        ]
-          .filter(Boolean)
-          .join("\n"),
+        text: textBody,
       });
-      if (error) {
-        errors.push(`${ev.id}: ${JSON.stringify(error)}`);
+      if (!result.ok) {
+        errors.push(`${ev.id}: ${result.error}`);
         continue;
       }
       await markEventNotified(ev.id);
