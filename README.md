@@ -1,5 +1,16 @@
 This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
 
+## Base de datos (Neon + Drizzle)
+
+Este proyecto puede usar [Neon](https://neon.tech) (PostgreSQL serverless) con [Drizzle ORM](https://orm.drizzle.team/).
+
+1. Crea un proyecto en Neon y copia la **connection string** (modo *pooled* si usas serverless en Vercel).
+2. En la raíz del repo, crea `.env.local` con `DATABASE_URL=...` (no lo subas a git; está en `.gitignore`).
+3. En Vercel: **Settings → Environment Variables** → añade `DATABASE_URL` con el mismo valor para *Production* / *Preview*.
+4. Aplica el esquema: `npm run db:push` (requiere `DATABASE_URL` en el entorno).
+
+El cliente usa `@neondatabase/serverless` y `drizzle-orm/neon-http` (ver `src/db/index.ts`). Si `DATABASE_URL` no está definida, `getDb()` devuelve `null` y la app debe manejar ese caso.
+
 ## Getting Started
 
 First, run the development server:
