@@ -1,13 +1,15 @@
-import { COOKIE_NAME, isAuthEnabled, verifySessionToken } from "@/lib/auth-session";
-import { cookies } from "next/headers";
+import { isAuthEnabled } from "@/lib/auth-session";
+import { getServerSession } from "@/lib/server-session";
 import { NextResponse } from "next/server";
 
 export async function GET() {
-  const authEnabled = isAuthEnabled();
-  if (!authEnabled) {
-    return NextResponse.json({ authEnabled: false, authenticated: true });
+  if (!isAuthEnabled()) {
+    return NextResponse.json({ authEnabled: false, authenticated: true, user: null });
   }
-  const token = (await cookies()).get(COOKIE_NAME)?.value;
-  const authenticated = token ? await verifySessionToken(token) : false;
-  return NextResponse.json({ authEnabled: true, authenticated });
+  const session = await getServerSession();
+  return NextResponse.json({
+    authEnabled: true,
+    authenticated: Boolean(session),
+    user: session ? { username: session.username, id: session.userId } : null,
+  });
 }

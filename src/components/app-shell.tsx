@@ -5,6 +5,7 @@ import { usePathname } from "next/navigation";
 import { useFinance } from "@/context/finance-context";
 import { MonthReminderBanner } from "./month-reminder-banner";
 import { SyncBadge } from "./sync-badge";
+import { UserMenu } from "./user-menu";
 import { YearSelect } from "./year-select";
 
 const links = [
@@ -32,8 +33,9 @@ export function AppShell({ children }: { children: React.ReactNode }) {
           <div className="mb-6 px-2">
             <YearSelect />
           </div>
-          <div className="mb-4 px-2">
+          <div className="mb-4 flex flex-col gap-3 px-2">
             <SyncBadge state={syncState} />
+            <UserMenu />
           </div>
           <nav className="flex flex-1 flex-col gap-1">
             {links.map((l) => {
@@ -83,6 +85,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
               <div className="mt-1 flex flex-wrap items-center gap-2">
                 <YearSelect />
                 <SyncBadge state={syncState} />
+                <UserMenu />
               </div>
             </div>
           </header>

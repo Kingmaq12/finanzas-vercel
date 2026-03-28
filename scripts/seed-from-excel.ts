@@ -1,7 +1,9 @@
 /**
- * Importa el Excel de gastos al bundle y hace upsert en Neon (finance_state).
- * Uso: npx tsx scripts/seed-from-excel.ts [ruta/al/archivo.xlsx]
- * Requiere DATABASE_URL en .env.local
+ * Importa el Excel de gastos al bundle y hace upsert en Neon (finance_state del usuario).
+ * Uso:
+ *   FINANCE_USERNAME=cesar.guerrero npx tsx scripts/seed-from-excel.ts [ruta/al/archivo.xlsx]
+ *   npx tsx scripts/seed-from-excel.ts [archivo.xlsx] [usuario]
+ * Requiere DATABASE_URL en .env.local y que el usuario exista (scripts/create-user.ts).
  */
 
 import { randomUUID } from "node:crypto";
@@ -10,10 +12,9 @@ import { eq } from "drizzle-orm";
 import { readFileSync, existsSync } from "fs";
 import { resolve } from "path";
 import { getDb, schema } from "../src/db/index";
+import { normalizeUsername } from "../src/lib/auth-users";
 import { createDefaultBundle } from "../src/lib/default-state";
 import type { ExtraTransaction, FinanceBundle, MonthIndex } from "../src/lib/types";
-
-const ROW_ID = "default";
 
 const MONTH_SHEETS: Record<string, MonthIndex> = {
   Ene: 0,
@@ -137,6 +138,21 @@ async function main(): Promise<void> {
     process.exit(1);
   }
 
+  const usernameRaw = process.env.FINANCE_USERNAME || process.argv[3];
+  if (!usernameRaw?.trim()) {
+    console.error(
+      "Indica el usuario destino: FINANCE_USERNAME=mi.usuario o como tercer argumento.",
+    );
+    process.exit(1);
+  }
+  const uname = normalizeUsername(usernameRaw);
+  const urow = await db.select().from(schema.users).where(eq(schema.users.username, uname)).limit(1);
+  if (!urow[0]) {
+    console.error(`No existe el usuario "${uname}". Créalo con: npx tsx scripts/create-user.ts`);
+    process.exit(1);
+  }
+  const userId = urow[0].id;
+
   const xlsxPath =
     process.argv[2] ||
     resolve(process.cwd(), "../Reporte de Gastos Ene-26 _ Dic-26.xlsx");
@@ -209,23 +225,23 @@ async function main(): Promise<void> {
   const existing = await db
     .select()
     .from(schema.financeState)
-    .where(eq(schema.financeState.id, ROW_ID))
+    .where(eq(schema.financeState.userId, userId))
     .limit(1);
 
   if (existing.length === 0) {
     await db.insert(schema.financeState).values({
-      id: ROW_ID,
+      userId,
       payload,
     });
   } else {
     await db
       .update(schema.financeState)
       .set({ payload, updatedAt: new Date() })
-      .where(eq(schema.financeState.id, ROW_ID));
+      .where(eq(schema.financeState.userId, userId));
   }
 
   console.log("Listo. Filas categorías 2026 +", extras.length, "movimientos extra.");
-  console.log("Neon actualizado (id=default). Abre la app en Vercel y recarga.");
+  console.log(`Neon actualizado para usuario "${uname}". Recarga la app (sesión de ese usuario).`);
 }
 
 main().catch((e) => {

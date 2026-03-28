@@ -19,12 +19,14 @@ import type {
   MonthIndex,
   Project,
 } from "@/lib/types";
+import { usePathname } from "next/navigation";
 import {
   createContext,
   useCallback,
   useContext,
   useEffect,
   useMemo,
+  useRef,
   useState,
 } from "react";
 
@@ -72,23 +74,60 @@ type FinanceContextValue = {
 const FinanceContext = createContext<FinanceContextValue | null>(null);
 
 export function FinanceProvider({ children }: { children: React.ReactNode }) {
+  const pathname = usePathname();
   const [ready, setReady] = useState(false);
   const [syncState, setSyncState] = useState<SyncState>("idle");
   const [bundle, setBundle] = useState<FinanceBundle>(createDefaultBundle);
   const [remoteSynced, setRemoteSynced] = useState(false);
+  /** Aísla localStorage por usuario cuando hay sesión. */
+  const [storageUserId, setStorageUserId] = useState<string | null>(null);
+  const wasLoginRoute = useRef(false);
 
-  useEffect(() => {
-    const t = requestAnimationFrame(() => {
-      setBundle(loadFinanceBundle());
-      setReady(true);
-    });
-    return () => cancelAnimationFrame(t);
+  const refreshSessionAndBundle = useCallback(() => {
+    (async () => {
+      const res = await fetch("/api/auth/session", { credentials: "include" });
+      const j = (await res.json()) as {
+        authEnabled?: boolean;
+        user?: { id: string } | null;
+      };
+      const uid = j.user?.id ?? null;
+      setStorageUserId(uid);
+      setBundle(loadFinanceBundle(uid));
+      setRemoteSynced(false);
+    })();
   }, []);
 
   useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      const res = await fetch("/api/auth/session", { credentials: "include" });
+      const j = (await res.json()) as {
+        authEnabled?: boolean;
+        user?: { id: string } | null;
+      };
+      const uid = j.user?.id ?? null;
+      if (cancelled) return;
+      setStorageUserId(uid);
+      setBundle(loadFinanceBundle(uid));
+      setReady(true);
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  useEffect(() => {
+    const isLogin = pathname === "/login";
+    if (wasLoginRoute.current && !isLogin) {
+      refreshSessionAndBundle();
+    }
+    wasLoginRoute.current = isLogin;
+  }, [pathname, refreshSessionAndBundle]);
+
+  useEffect(() => {
     if (!ready) return;
-    saveFinanceBundle(bundle);
-  }, [bundle, ready]);
+    saveFinanceBundle(bundle, storageUserId);
+  }, [bundle, ready, storageUserId]);
 
   useEffect(() => {
     if (!ready) return;
@@ -123,7 +162,7 @@ export function FinanceProvider({ children }: { children: React.ReactNode }) {
     return () => {
       cancelled = true;
     };
-  }, [ready]);
+  }, [ready, storageUserId]);
 
   useEffect(() => {
     if (!ready || !remoteSynced) return;

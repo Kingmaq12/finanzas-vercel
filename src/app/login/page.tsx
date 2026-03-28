@@ -5,6 +5,7 @@ import { useEffect, useState } from "react";
 
 export default function LoginPage() {
   const router = useRouter();
+  const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [err, setErr] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
@@ -34,7 +35,8 @@ export default function LoginPage() {
       const res = await fetch("/api/auth/login", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ password }),
+        credentials: "include",
+        body: JSON.stringify({ username: username.trim(), password }),
       });
       if (!res.ok) {
         const j = (await res.json().catch(() => ({}))) as { error?: string };
@@ -63,9 +65,19 @@ export default function LoginPage() {
           Acceso
         </h1>
         <p className="mt-2 text-center text-sm text-[var(--app-muted)]">
-          Introduce la contraseña configurada en el servidor (variables de entorno).
+          Cada usuario tiene sus datos en la base de datos. Usuario y contraseña
+          los define quien administra el proyecto (scripts o panel SQL).
         </p>
         <form className="mt-8 space-y-4" onSubmit={onSubmit}>
+          <input
+            type="text"
+            name="username"
+            autoComplete="username"
+            className="w-full rounded-xl border border-[var(--app-border)] px-4 py-3 text-base outline-none focus:border-[var(--app-accent)]"
+            placeholder="Usuario"
+            value={username}
+            onChange={(e) => setUsername(e.target.value)}
+          />
           <input
             type="password"
             autoComplete="current-password"

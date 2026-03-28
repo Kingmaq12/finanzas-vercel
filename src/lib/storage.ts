@@ -9,24 +9,32 @@ import type { FinanceBundle, FinanceData } from "./types";
 const KEY_V2 = "finanzas-vercel:v2";
 const KEY_V1 = "finanzas-vercel:v1";
 
-export function loadFinanceBundle(): FinanceBundle {
+function keyV2ForUser(userId: string | null | undefined): string {
+  if (userId) return `finanzas-vercel:v2:user:${userId}`;
+  return KEY_V2;
+}
+
+export function loadFinanceBundle(userId?: string | null): FinanceBundle {
   if (typeof window === "undefined") return createDefaultBundle();
+  const key = keyV2ForUser(userId);
   try {
-    const rawV2 = localStorage.getItem(KEY_V2);
+    const rawV2 = localStorage.getItem(key);
     if (rawV2) {
       const parsed = JSON.parse(rawV2) as unknown;
       if (isFinanceBundle(parsed)) {
         return parsed;
       }
     }
-    const rawV1 = localStorage.getItem(KEY_V1);
-    if (rawV1) {
-      const parsed = JSON.parse(rawV1) as unknown;
-      if (isFinanceData(parsed)) {
-        const b = normalizeToBundle(parsed);
-        saveFinanceBundle(b);
-        localStorage.removeItem(KEY_V1);
-        return b;
+    if (!userId) {
+      const rawV1 = localStorage.getItem(KEY_V1);
+      if (rawV1) {
+        const parsed = JSON.parse(rawV1) as unknown;
+        if (isFinanceData(parsed)) {
+          const b = normalizeToBundle(parsed);
+          saveFinanceBundle(b, null);
+          localStorage.removeItem(KEY_V1);
+          return b;
+        }
       }
     }
   } catch {
@@ -35,10 +43,14 @@ export function loadFinanceBundle(): FinanceBundle {
   return createDefaultBundle();
 }
 
-export function saveFinanceBundle(bundle: FinanceBundle): void {
+export function saveFinanceBundle(
+  bundle: FinanceBundle,
+  userId?: string | null,
+): void {
   if (typeof window === "undefined") return;
+  const key = keyV2ForUser(userId);
   localStorage.setItem(
-    KEY_V2,
+    key,
     JSON.stringify({ ...bundle, updatedAt: new Date().toISOString() }),
   );
 }

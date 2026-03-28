@@ -1,12 +1,15 @@
-import { COOKIE_NAME } from "@/lib/auth-session";
+import { COOKIE_NAME, isAuthEnabled } from "@/lib/auth-session";
 import { jwtVerify } from "jose";
 import type { NextRequest } from "next/server";
 import { NextResponse } from "next/server";
 
 export async function middleware(req: NextRequest) {
-  const password = process.env.FINANCE_PASSWORD;
+  if (!isAuthEnabled()) {
+    return NextResponse.next();
+  }
+
   const secret = process.env.SESSION_SECRET;
-  if (!password || !secret) {
+  if (!secret || secret.length < 16) {
     return NextResponse.next();
   }
 

@@ -1,25 +1,16 @@
 import { getDb, schema } from "@/db";
-import {
-  COOKIE_NAME,
-  isAuthEnabled,
-  verifySessionToken,
-} from "@/lib/auth-session";
+import { isAuthEnabled } from "@/lib/auth-session";
+import { getServerSession } from "@/lib/server-session";
 import type { FinanceBundle } from "@/lib/types";
 import { eq } from "drizzle-orm";
-import { cookies } from "next/headers";
 import { NextResponse } from "next/server";
 
-const ROW_ID = "default";
-
-async function requireAuth(): Promise<boolean> {
-  if (!isAuthEnabled()) return true;
-  const c = (await cookies()).get(COOKIE_NAME)?.value;
-  if (!c) return false;
-  return verifySessionToken(c);
-}
-
 export async function GET() {
-  if (!(await requireAuth())) {
+  if (!isAuthEnabled()) {
+    return NextResponse.json({ error: "Sin base de datos para sync" }, { status: 503 });
+  }
+  const session = await getServerSession();
+  if (!session) {
     return NextResponse.json({ error: "No autorizado" }, { status: 401 });
   }
   const db = getDb();
@@ -29,7 +20,7 @@ export async function GET() {
   const rows = await db
     .select()
     .from(schema.financeState)
-    .where(eq(schema.financeState.id, ROW_ID))
+    .where(eq(schema.financeState.userId, session.userId))
     .limit(1);
   const row = rows[0];
   if (!row) {
@@ -42,7 +33,11 @@ export async function GET() {
 }
 
 export async function PUT(req: Request) {
-  if (!(await requireAuth())) {
+  if (!isAuthEnabled()) {
+    return NextResponse.json({ error: "Sin base de datos para sync" }, { status: 503 });
+  }
+  const session = await getServerSession();
+  if (!session) {
     return NextResponse.json({ error: "No autorizado" }, { status: 401 });
   }
   const db = getDb();
@@ -60,18 +55,18 @@ export async function PUT(req: Request) {
   const existing = await db
     .select()
     .from(schema.financeState)
-    .where(eq(schema.financeState.id, ROW_ID))
+    .where(eq(schema.financeState.userId, session.userId))
     .limit(1);
   if (existing.length === 0) {
     await db.insert(schema.financeState).values({
-      id: ROW_ID,
+      userId: session.userId,
       payload,
     });
   } else {
     await db
       .update(schema.financeState)
       .set({ payload, updatedAt: new Date() })
-      .where(eq(schema.financeState.id, ROW_ID));
+      .where(eq(schema.financeState.userId, session.userId));
   }
   return NextResponse.json({ ok: true });
 }
