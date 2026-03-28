@@ -1,8 +1,17 @@
 @import "tailwindcss";
 
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --background: #f4f6f8;
+  --foreground: #0f172a;
+  --app-bg: #f1f5f9;
+  --app-fg: #0f172a;
+  --app-muted: #64748b;
+  --app-border: #e2e8f0;
+  --app-card: #ffffff;
+  --app-sidebar: #f8fafc;
+  --app-header: rgba(248, 250, 252, 0.92);
+  --app-accent: #059669;
+  --app-accent-soft: rgba(5, 150, 105, 0.1);
 }
 
 @theme inline {
@@ -12,15 +21,20 @@
   --font-mono: var(--font-geist-mono);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+body {
+  background: var(--app-bg);
+  color: var(--app-fg);
+  font-family: var(--font-geist-sans), system-ui, sans-serif;
 }
 
-body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+/* Área segura en iPhone y objetivos táctiles mínimos */
+.tap-target {
+  touch-action: manipulation;
+  min-height: 44px;
+}
+
+@media (max-width: 767px) {
+  .tap-target {
+    min-height: 48px;
+  }
 }
