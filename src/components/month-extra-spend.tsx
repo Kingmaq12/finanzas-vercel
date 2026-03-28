@@ -2,6 +2,7 @@
 
 import { monthRollup } from "@/lib/aggregates";
 import { useFinance } from "@/context/finance-context";
+import { fixedOutflowPaidSummary } from "@/lib/fixed-expense-paid";
 import { formatCop, parseAmountInput } from "@/lib/format";
 import { MONTH_SHORT, monthIndexToSlug } from "@/lib/months";
 import type { MonthIndex } from "@/lib/types";
@@ -27,6 +28,7 @@ export function MonthExtraSpend({ monthIndex }: { monthIndex: MonthIndex }) {
   );
 
   const rollup = monthRollup(data, monthIndex);
+  const fixedPaid = fixedOutflowPaidSummary(data, monthIndex);
 
   if (!ready) {
     return <p className="text-sm text-[var(--app-muted)]">Cargando…</p>;
@@ -64,6 +66,56 @@ export function MonthExtraSpend({ monthIndex }: { monthIndex: MonthIndex }) {
           ))}
         </div>
       </div>
+
+      <motion.div
+        initial={{ opacity: 0, y: 6 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ type: "spring" as const, stiffness: 380, damping: 30 }}
+        className={`rounded-xl border px-4 py-3 shadow-sm ${
+          fixedPaid.total === 0
+            ? "border-[var(--app-border)] bg-[var(--app-card)]"
+            : fixedPaid.allPaid
+              ? "border-emerald-200 bg-emerald-50/80"
+              : "border-amber-200 bg-amber-50/70"
+        }`}
+      >
+        <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+          <div>
+            <p className="text-xs font-medium uppercase tracking-wide text-[var(--app-muted)]">
+              Gastos fijos este mes (tabla Categorías)
+            </p>
+            <p className="mt-1 text-sm text-[var(--app-fg)]">
+              {fixedPaid.total === 0 ? (
+                <>
+                  No hay egresos ni deudas con monto en{" "}
+                  <strong>{MONTH_SHORT[monthIndex]}</strong>. Configúralos en{" "}
+                  <strong>Categorías</strong> si aplica.
+                </>
+              ) : (
+                <>
+                  Marcados como pagados:{" "}
+                  <strong
+                    className={
+                      fixedPaid.allPaid ? "text-emerald-700" : "text-amber-900"
+                    }
+                  >
+                    {fixedPaid.paid}/{fixedPaid.total}
+                  </strong>
+                  {fixedPaid.allPaid
+                    ? " — todo al día."
+                    : " — toca ✓ en cada celda al pagar (verde como en Excel)."}
+                </>
+              )}
+            </p>
+          </div>
+          <Link
+            href="/categorias#categorias-egresos"
+            className="shrink-0 rounded-lg bg-[var(--app-accent)] px-3 py-2 text-center text-xs font-medium text-white shadow-sm transition-transform active:scale-[0.98] hover:opacity-95"
+          >
+            Ver / marcar ✓
+          </Link>
+        </div>
+      </motion.div>
 
       <div className="grid gap-4 sm:grid-cols-2">
         <motion.div

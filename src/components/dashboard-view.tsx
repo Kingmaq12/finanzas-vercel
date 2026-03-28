@@ -1,6 +1,7 @@
 "use client";
 
 import { allMonthRollups, average, yearlyTotals } from "@/lib/aggregates";
+import { fixedOutflowPaidByAllMonths } from "@/lib/fixed-expense-paid";
 import { formatCop } from "@/lib/format";
 import { MONTH_SHORT } from "@/lib/months";
 import { useFinance } from "@/context/finance-context";
@@ -29,6 +30,7 @@ export function DashboardView() {
   const rollups = allMonthRollups(data);
   const year = yearlyTotals(rollups);
   const avgDisp = average(rollups.map((r) => r.disponible));
+  const fixedPaidRow = fixedOutflowPaidByAllMonths(data);
 
   if (!ready) {
     return (
@@ -132,6 +134,27 @@ export function DashboardView() {
             </tr>
           </thead>
           <tbody>
+            <tr className="border-b border-[var(--app-border)] bg-emerald-50/50 text-xs">
+              <td className="sticky left-0 z-10 bg-emerald-50/95 px-4 py-2.5 whitespace-nowrap backdrop-blur-[2px]">
+                Fijos pagados (✓ egresos + deudas)
+              </td>
+              {fixedPaidRow.map(({ monthIndex, paid, total }) => (
+                <td
+                  key={monthIndex}
+                  className={`px-2 py-2.5 text-right tabular-nums ${
+                    total === 0
+                      ? "text-[var(--app-muted)]"
+                      : paid === total
+                        ? "font-medium text-emerald-700"
+                        : "text-amber-800"
+                  }`}
+                >
+                  {total === 0 ? "—" : `${paid}/${total}`}
+                </td>
+              ))}
+              <td className="px-3 py-2.5 text-right tabular-nums text-[var(--app-muted)]">—</td>
+              <td className="px-3 py-2.5 text-right tabular-nums text-[var(--app-muted)]">—</td>
+            </tr>
             {[
               { label: "Ingresos", pick: (r: (typeof rollups)[0]) => r.totalIncome },
               {

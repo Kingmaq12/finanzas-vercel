@@ -62,10 +62,12 @@ function Section({
   title,
   kind,
   hint,
+  id,
 }: {
   title: string;
   kind: CategoryKind;
   hint: string;
+  id?: string;
 }) {
   const {
     data,
@@ -82,7 +84,7 @@ function Section({
   const [newName, setNewName] = useState("");
 
   return (
-    <div className="space-y-3">
+    <div id={id} className="scroll-mt-24 space-y-3">
       <div className="flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
         <div>
           <h2 className="text-lg font-semibold">{title}</h2>
@@ -227,11 +229,13 @@ export function CategoryMatrix() {
         hint="Marca ✓ cuando el ingreso de ese mes ya está listo o cobrado."
       />
       <Section
+        id="categorias-egresos"
         title="Egresos recurrentes"
         kind="expense"
         hint="Alquiler, servicios, aportes… Marca ✓ al pagar (celda verde como en tu Excel)."
       />
       <Section
+        id="categorias-deudas"
         title="Deudas"
         kind="debt"
         hint="Cuotas y banco: ✓ cuando hiciste el pago de ese mes."

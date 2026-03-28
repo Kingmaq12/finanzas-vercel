@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useFinance } from "@/context/finance-context";
+import { MonthReminderBanner } from "./month-reminder-banner";
 import { SyncBadge } from "./sync-badge";
 import { YearSelect } from "./year-select";
 
@@ -86,7 +87,10 @@ export function AppShell({ children }: { children: React.ReactNode }) {
             </div>
           </header>
 
-          <main className="min-w-0 flex-1 px-4 py-6 sm:px-6 md:px-10 md:py-12">{children}</main>
+          <main className="min-w-0 flex-1 px-4 py-6 sm:px-6 md:px-10 md:py-12">
+            <MonthReminderBanner />
+            {children}
+          </main>
 
           <nav
             className="fixed bottom-0 left-0 right-0 z-30 flex border-t border-[var(--app-border)] bg-[var(--app-card)]/95 pb-[env(safe-area-inset-bottom)] backdrop-blur-md md:hidden"
