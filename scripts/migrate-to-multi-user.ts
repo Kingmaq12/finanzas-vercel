@@ -48,10 +48,12 @@ async function main() {
     return;
   }
 
-  const fsCols = await sql`
+  const fsCols = (await sql`
     SELECT column_name FROM information_schema.columns
-    WHERE table_schema = 'public' AND table_name = 'finance_state'`;
-  const colnames = fsCols.map((r: { column_name: string }) => r.column_name);
+    WHERE table_schema = 'public' AND table_name = 'finance_state'`) as {
+    column_name: string;
+  }[];
+  const colnames = fsCols.map((r) => r.column_name);
   if (!colnames.includes("id")) {
     console.log("finance_state ya parece multi-usuario (sin columna id). Salida.");
     return;

@@ -29,10 +29,10 @@ async function main() {
   const url = process.env.DATABASE_URL;
   if (!url) throw new Error("DATABASE_URL");
   const sql = neon(url);
-  const tables = await sql`
+  const tables = (await sql`
     SELECT table_name FROM information_schema.tables
-    WHERE table_schema = 'public' ORDER BY table_name`;
-  console.log("Tables:", tables.map((r: { table_name: string }) => r.table_name));
+    WHERE table_schema = 'public' ORDER BY table_name`) as { table_name: string }[];
+  console.log("Tables:", tables.map((r) => r.table_name));
   for (const name of ["finance_state", "users"]) {
     const cols = await sql`
       SELECT column_name, data_type FROM information_schema.columns
