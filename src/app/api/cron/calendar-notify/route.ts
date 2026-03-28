@@ -3,8 +3,8 @@ import { isTelegramConfigured, sendTelegramMessage } from "@/lib/telegram-client
 import { NextResponse } from "next/server";
 
 /**
- * Vercel Cron: define CRON_SECRET y (opcional) TELEGRAM_BOT_TOKEN + TELEGRAM_CHAT_ID.
- * Comprueba eventos futuros y envía un mensaje cuando se cumple la ventana (minutos antes).
+ * Vercel Cron (Hobby: como mucho 1×/día en vercel.json) o ping externo con el mismo Bearer.
+ * Requiere CRON_SECRET y (para enviar) TELEGRAM_BOT_TOKEN + TELEGRAM_CHAT_ID.
  */
 export async function GET(req: Request) {
   const secret = process.env.CRON_SECRET;

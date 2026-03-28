@@ -205,7 +205,8 @@ export function SharedHouseholdView() {
           <section className="rounded-2xl border border-[var(--app-border)] bg-[var(--app-card)] p-6 shadow-sm">
             <h2 className="text-sm font-semibold">Recordatorios (Telegram)</h2>
             <p className="mt-1 text-xs text-[var(--app-muted)]">
-              El cron (cada hora) envía un mensaje al chat configurado en el servidor con{" "}
+              El cron revisa la ventana de aviso y envía por Telegram (en Hobby Vercel suele ser 1× al día;
+              se puede usar un ping horario externo). Variables en el servidor:{" "}
               <code className="text-[10px]">TELEGRAM_BOT_TOKEN</code> y{" "}
               <code className="text-[10px]">TELEGRAM_CHAT_ID</code>. Puedes probar el envío desde{" "}
               <strong>Datos</strong>.
